@@ -2,6 +2,44 @@
 #include <git2.h>
 using namespace std;
 
+void identifyCodeChanges(git_repository* repo)
+{
+    git_status_options git_status = GIT_STATUS_OPTIONS_INIT;
+    git_status_list* git_status_list = nullptr;
+
+    int error = git_status_list_new(&git_status_list, repo, &git_status);
+    handleError(error, "Error getting status.");
+
+    size_t entry_count = git_status_list_entrycount(git_status_list);
+
+    if (entry_count > 0)
+    {
+        for (int i=0; i<entry_count; ++i)
+        {
+            const git_status_entry* entry = git_status_byindex(git_status_list, i);
+
+            switch(entry->status) 
+            {
+                case GIT_STATUS_CURRENT :
+                    cout << "Added: " << entry->index_to_workdir->new_file.path << endl;
+                    break;
+                case GIT_STATUS_INDEX_NEW :
+                case GIT_STATUS_INDEX_MODIFIED :
+                case GIT_STATUS_INDEX_DELETED :
+                case GIT_STATUS_INDEX_TYPECHANGE :
+                case GIT_STATUS_WT_NEW :
+                case GIT_STATUS_WT_MODIFIED :
+                case GIT_STATUS_WT_DELETED :
+                case GIT_STATUS_WT_TYPECHANGE :
+                case GIT_STATUS_WT_RENAMED :
+                case GIT_STATUS_WT_UNREADABLE :
+                case GIT_STATUS_IGNORED : 
+                case GIT_STATUS_CONFLICTED :
+            }
+        }
+    }
+}
+
 int openGitRepo(git_repository **out, const char *path){
     const char* repo_path = path;
     int error = git_repository_open(out, repo_path);
@@ -32,7 +70,7 @@ int main(){
     
     git_revwalk* walker = nullptr;
     initWalker(&walker, git_repo);
-    
+
     git_oid commit_oid;
     while (git_revwalk_next(&commit_oid, walker) == 0) 
     {
