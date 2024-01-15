@@ -5,7 +5,7 @@ using namespace std;
 int main(){
     cout << "Welcome to GoodCommit" << endl;
     git_libgit2_init();
-    const char* repo_path = "https://github.com/noranorab/mini-projet";
+    const char* repo_path = "/home/nora/Bureau/goodcommit/goodcommit";
 
     git_repository* git_repo = nullptr;
     int error = git_repository_open(&git_repo, repo_path);
@@ -15,17 +15,18 @@ int main(){
         cout << "Error opening the repository" << endl;
     }
 
+    
     git_revwalk* walker = nullptr;
     git_revwalk_new(&walker, git_repo);
     git_revwalk_push_head(walker);
-
     git_oid commit_oid;
-    while (git_revwalk_next(&commit_oid, walker)) 
+    while (git_revwalk_next(&commit_oid, walker) == 0) 
     {
         git_commit* commit = nullptr;
         git_commit_lookup(&commit, git_repo, &commit_oid);
 
         cout << "Commit ID:" << git_oid_tostr_s(&commit_oid) <<endl;
+        cout << "Date: " << git_commit_author(commit)->when.time << endl;
         git_commit_free(commit);
     }
 
