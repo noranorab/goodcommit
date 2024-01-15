@@ -2,6 +2,11 @@
 #include <git2.h>
 using namespace std;
 
+void out(string entryChange, string message)
+{
+    cout << entryChange << endl;
+}
+
 void identifyCodeChanges(git_repository* repo)
 {
     git_status_options git_status = GIT_STATUS_OPTIONS_INIT;
@@ -21,23 +26,54 @@ void identifyCodeChanges(git_repository* repo)
             switch(entry->status) 
             {
                 case GIT_STATUS_CURRENT :
-                    cout << "Added: " << entry->index_to_workdir->new_file.path << endl;
+                    out("Added: ", entry->index_to_workdir->new_file.path);
                     break;
                 case GIT_STATUS_INDEX_NEW :
+                    out("Added to index: ", entry->index_to_workdir->new_file.path);
+                    break;
                 case GIT_STATUS_INDEX_MODIFIED :
+                    out("Modified in index: ", entry->index_to_workdir->new_file.path);
+                    break;
                 case GIT_STATUS_INDEX_DELETED :
+                    out("Deleted from index: ", entry->index_to_workdir->new_file.path);
+                    break;
                 case GIT_STATUS_INDEX_TYPECHANGE :
+                    out("Type change in index: ", entry->index_to_workdir->new_file.path);
+                    break;
                 case GIT_STATUS_WT_NEW :
+                    out("Untracked in working directory: ", entry->index_to_workdir->new_file.path);
+                    break;
                 case GIT_STATUS_WT_MODIFIED :
+                    out("Modified in working directory: ", entry->index_to_workdir->new_file.path);
+                    break;
                 case GIT_STATUS_WT_DELETED :
+                    out("Deleted from working directory: ", entry->index_to_workdir->new_file.path);
+                    break;
                 case GIT_STATUS_WT_TYPECHANGE :
+                    out("Type chnage in working directory: ", entry->index_to_workdir->new_file.path);
+                    break;
                 case GIT_STATUS_WT_RENAMED :
+                    out("Renamed in working directory: ", entry->index_to_workdir->new_file.path);
+                    break;
                 case GIT_STATUS_WT_UNREADABLE :
+                    out("Unreadable in working directory: ", entry->index_to_workdir->new_file.path);
+                    break;
                 case GIT_STATUS_IGNORED : 
+                    out("Ignored: ", entry->index_to_workdir->new_file.path);
+                    break;
                 case GIT_STATUS_CONFLICTED :
+                    out("Conflicted: ", entry->index_to_workdir->new_file.path);
+                    break;
+                default:
+                    out("Unknown status for file: ",entry->index_to_workdir->new_file.path);
+                    break;
             }
         }
+    } else {
+        cout <<"No changes identified" <<endl;
     }
+
+    git_status_list_free(git_status_list);
 }
 
 int openGitRepo(git_repository **out, const char *path){
@@ -67,24 +103,8 @@ int main(){
 
     handleError(error, "Error opening the repository");
 
+    identifyCodeChanges(git_repo);
     
-    git_revwalk* walker = nullptr;
-    initWalker(&walker, git_repo);
-
-    git_oid commit_oid;
-    while (git_revwalk_next(&commit_oid, walker) == 0) 
-    {
-        git_commit* commit = nullptr;
-        git_commit_lookup(&commit, git_repo, &commit_oid);
-
-        cout << "Commit ID:" << git_oid_tostr_s(&commit_oid) <<endl;
-        cout << "Date: " << git_commit_author(commit)->when.time << endl;
-        git_commit_free(commit);
-    }
-
-    
-    
-    git_revwalk_free(walker);
     git_repository_free(git_repo);
     git_libgit2_shutdown();
     return 0;
