@@ -2,9 +2,29 @@
 #include <git2.h>
 using namespace std;
 
-void out(string entryChange, string message)
+
+int openGitRepo(git_repository **out, const char *path){
+    const char* repo_path = path;
+    int error = git_repository_open(out, repo_path);
+    return error;
+}
+
+void handleError(int error, string message)
 {
-    cout << entryChange << endl;
+    if (error < 0){
+        cout << message << endl;
+    }
+}
+void initWalker(git_revwalk **out, git_repository *rep)
+{
+    git_revwalk_new(out, rep);
+    git_revwalk_push_head(*out);
+}
+
+
+void out(string message, string entryChange)
+{
+    cout << message << entryChange << endl;
 }
 
 void identifyCodeChanges(git_repository* repo)
@@ -22,6 +42,9 @@ void identifyCodeChanges(git_repository* repo)
         for (int i=0; i<entry_count; ++i)
         {
             const git_status_entry* entry = git_status_byindex(git_status_list, i);
+
+            cout << "File Path: " << entry->index_to_workdir->new_file.path << endl;
+
 
             switch(entry->status) 
             {
@@ -74,24 +97,6 @@ void identifyCodeChanges(git_repository* repo)
     }
 
     git_status_list_free(git_status_list);
-}
-
-int openGitRepo(git_repository **out, const char *path){
-    const char* repo_path = path;
-    int error = git_repository_open(out, repo_path);
-    return error;
-}
-
-void handleError(int error, string message)
-{
-    if (error < 0){
-        cout << message << endl;
-    }
-}
-void initWalker(git_revwalk **out, git_repository *rep)
-{
-    git_revwalk_new(out, rep);
-    git_revwalk_push_head(*out);
 }
 
 int main(){
