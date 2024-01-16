@@ -13,7 +13,11 @@ void handleError(int error, string message)
 {
     if (error < 0){
         cout << message << endl;
+        cout <<"Exited with code: " << error <<endl;
+        exit(EXIT_FAILURE);
+    
     }
+    
 }
 void initWalker(git_revwalk **out, git_repository *rep)
 {
@@ -30,13 +34,16 @@ void out(string message, string entryChange)
 void identifyCodeChanges(git_repository* repo)
 {
     git_status_options git_status = GIT_STATUS_OPTIONS_INIT;
+    git_status.show = GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
+    git_status.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED;
+
     git_status_list* git_status_list = nullptr;
 
     int error = git_status_list_new(&git_status_list, repo, &git_status);
     handleError(error, "Error getting status.");
     
     size_t entry_count = git_status_list_entrycount(git_status_list);
-    cout << entry_count <<endl;
+    cout <<entry_count<<endl;
 
     if (entry_count > 0)
     {
@@ -96,6 +103,39 @@ void identifyCodeChanges(git_repository* repo)
 
     git_status_list_free(git_status_list);
 }
+
+int print_patch_line(
+    git_diff_delta *delta,       // Delta information
+    git_diff_hunk *hunk,         // Hunk information
+    git_diff_line *line,         // Line information
+    void *payload                // Custom payload (can be nullptr)
+) {
+    // Example: Print the content of each line
+    std::cout << "Line: " << line->content << std::endl;
+
+    // Return 0 to continue processing lines
+    return 0;
+}
+
+void print_diff(git_diff *diff)
+{
+    size_t nums_deltas = size_t num_deltas = git_diff_num_deltas(diff);
+
+    for (size_t i=0; i < nums_deltas; ++i)
+    {
+        const git_diff_delta *delta = git_diff_get_delta(diff, i);
+        out("File : ", delta->new_file.path);
+
+        git_patch *patch;
+        if (git_patch_from_diff(&patch, diff, i) == GIT_OK)
+        {
+            git_patch_print(patch, print_patch_line, nullptr);
+            git_patch_free(patch);
+        }
+        std::cout << std::endl;
+    }
+}
+
 
 int main(){
     cout << "Welcome to GoodCommit" << endl;
