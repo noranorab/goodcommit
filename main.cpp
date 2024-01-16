@@ -34,18 +34,16 @@ void identifyCodeChanges(git_repository* repo)
 
     int error = git_status_list_new(&git_status_list, repo, &git_status);
     handleError(error, "Error getting status.");
-
+    
     size_t entry_count = git_status_list_entrycount(git_status_list);
+    cout << entry_count <<endl;
 
     if (entry_count > 0)
     {
-        for (int i=0; i<entry_count; ++i)
+        for (size_t i=0; i<entry_count; ++i)
         {
             const git_status_entry* entry = git_status_byindex(git_status_list, i);
-
-            cout << "File Path: " << entry->index_to_workdir->new_file.path << endl;
-
-
+            
             switch(entry->status) 
             {
                 case GIT_STATUS_CURRENT :
@@ -73,7 +71,7 @@ void identifyCodeChanges(git_repository* repo)
                     out("Deleted from working directory: ", entry->index_to_workdir->new_file.path);
                     break;
                 case GIT_STATUS_WT_TYPECHANGE :
-                    out("Type chnage in working directory: ", entry->index_to_workdir->new_file.path);
+                    out("Type change in working directory: ", entry->index_to_workdir->new_file.path);
                     break;
                 case GIT_STATUS_WT_RENAMED :
                     out("Renamed in working directory: ", entry->index_to_workdir->new_file.path);
@@ -109,6 +107,7 @@ int main(){
     handleError(error, "Error opening the repository");
 
     identifyCodeChanges(git_repo);
+    
     
     git_repository_free(git_repo);
     git_libgit2_shutdown();
