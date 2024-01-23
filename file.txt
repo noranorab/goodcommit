@@ -1,0 +1,2136 @@
+Welcome to GoodCommit
+5
+Untracked in working directory: .vscode/tasks.json
+Modified in working directory: CMakeLists.txt
+Untracked in working directory: file.txt
+Untracked in working directory: llvm/
+Modified in working directory: main.cpp
+Number of Deltas: 2
+File : CMakeLists.txt
+--------------------------------------------
+Line Status: Modified, Content: diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 628f1e1..390654f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+
+Line Status: Modified, Content: @@ -6,13 +6,17 @@ set(CMAKE_CXX_STANDARD 17)
+
+Line Status: Modified, Content: 
+find_package(Clang REQUIRED)
+
+include_directories(${CLANG_INCLUDE_DIRS})
+
+
+add_executable(
+    goodcommit main.cpp
+)
+
+# Link against the library
+target_link_libraries(goodcommit -lgit2)
+target_link_libraries(goodcommit ${CLANG_LIBRARIES})
+
+
+
+
+
+Line Status: Modified, Content: find_package(Clang REQUIRED)
+
+include_directories(${CLANG_INCLUDE_DIRS})
+
+
+add_executable(
+    goodcommit main.cpp
+)
+
+# Link against the library
+target_link_libraries(goodcommit -lgit2)
+target_link_libraries(goodcommit ${CLANG_LIBRARIES})
+
+
+
+
+
+Line Status: Modified, Content: 
+include_directories(${CLANG_INCLUDE_DIRS})
+
+
+add_executable(
+    goodcommit main.cpp
+)
+
+# Link against the library
+target_link_libraries(goodcommit -lgit2)
+target_link_libraries(goodcommit ${CLANG_LIBRARIES})
+
+
+
+
+
+Line Status: Added, Content: include_directories(${CLANG_INCLUDE_DIRS})
+
+
+add_executable(
+    goodcommit main.cpp
+)
+
+# Link against the library
+target_link_libraries(goodcommit -lgit2)
+target_link_libraries(goodcommit ${CLANG_LIBRARIES})
+
+
+
+
+
+Line Status: Added, Content: 
+
+add_executable(
+    goodcommit main.cpp
+)
+
+# Link against the library
+target_link_libraries(goodcommit -lgit2)
+target_link_libraries(goodcommit ${CLANG_LIBRARIES})
+
+
+
+
+
+Line Status: Added, Content: 
+add_executable(
+    goodcommit main.cpp
+)
+
+# Link against the library
+target_link_libraries(goodcommit -lgit2)
+target_link_libraries(goodcommit ${CLANG_LIBRARIES})
+
+
+
+
+
+Line Status: Modified, Content: add_executable(
+    goodcommit main.cpp
+)
+
+# Link against the library
+target_link_libraries(goodcommit -lgit2)
+target_link_libraries(goodcommit ${CLANG_LIBRARIES})
+
+
+
+
+
+Line Status: Modified, Content:     goodcommit main.cpp
+)
+
+# Link against the library
+target_link_libraries(goodcommit -lgit2)
+target_link_libraries(goodcommit ${CLANG_LIBRARIES})
+
+
+
+
+
+Line Status: Modified, Content: )
+
+# Link against the library
+target_link_libraries(goodcommit -lgit2)
+target_link_libraries(goodcommit ${CLANG_LIBRARIES})
+
+
+
+
+
+Line Status: Modified, Content: 
+# Link against the library
+target_link_libraries(goodcommit -lgit2)
+target_link_libraries(goodcommit ${CLANG_LIBRARIES})
+
+
+
+
+
+Line Status: Modified, Content: # Link against the library
+target_link_libraries(goodcommit -lgit2)
+target_link_libraries(goodcommit ${CLANG_LIBRARIES})
+
+
+
+
+
+Line Status: Modified, Content: target_link_libraries(goodcommit -lgit2)
+target_link_libraries(goodcommit ${CLANG_LIBRARIES})
+
+
+
+
+
+Line Status: Deleted, Content: target_include_directories(goodcommit PRIVATE ${CLANG_INCLUDE_DIRS})
+target_link_libraries(goodcommit ${CLANG_LIBS})
+
+
+
+Line Status: Deleted, Content: target_link_libraries(goodcommit ${CLANG_LIBS})
+
+
+
+Line Status: Added, Content: target_link_libraries(goodcommit ${CLANG_LIBRARIES})
+
+
+
+
+
+Line Status: Added, Content: 
+
+
+
+
+Line Status: Added, Content: 
+
+
+
+Line Status: Modified, Content: 
+
+
+Line Status: Modified, Content: 
+
+
+File : main.cpp
+--------------------------------------------
+Line Status: Modified, Content: diff --git a/main.cpp b/main.cpp
+index 75d77af..32609fe 100644
+--- a/main.cpp
++++ b/main.cpp
+
+Line Status: Modified, Content: @@ -160,23 +160,22 @@ size_t getTheNumberOfChangedLines(git_patch* patch, int num)
+
+Line Status: Modified, Content:     return git_patch_num_lines_in_hunk(patch, num);
+}
+
+
+void getTheContentOfEachChangedLine(git_patch *patch, size_t hunkIndex) {
+    size_t lines = git_patch_num_lines_in_hunk(patch, hunkIndex);
+    
+    for (size_t i = 0; i < lines; ++i) {
+        const git_diff_line *line;
+        if (git_patch_get_line_in_hunk(&line, patch, hunkIndex, i) == GIT_OK) {
+            size_t numHunks = git_patch_num_hunks(patch);
+
+            for (size_t h = 0; h < numHunks; ++h) {
+                getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Modified, Content: }
+
+
+void getTheContentOfEachChangedLine(git_patch *patch, size_t hunkIndex) {
+    size_t lines = git_patch_num_lines_in_hunk(patch, hunkIndex);
+    
+    for (size_t i = 0; i < lines; ++i) {
+        const git_diff_line *line;
+        if (git_patch_get_line_in_hunk(&line, patch, hunkIndex, i) == GIT_OK) {
+            size_t numHunks = git_patch_num_hunks(patch);
+
+            for (size_t h = 0; h < numHunks; ++h) {
+                getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Modified, Content: 
+
+void getTheContentOfEachChangedLine(git_patch *patch, size_t hunkIndex) {
+    size_t lines = git_patch_num_lines_in_hunk(patch, hunkIndex);
+    
+    for (size_t i = 0; i < lines; ++i) {
+        const git_diff_line *line;
+        if (git_patch_get_line_in_hunk(&line, patch, hunkIndex, i) == GIT_OK) {
+            size_t numHunks = git_patch_num_hunks(patch);
+
+            for (size_t h = 0; h < numHunks; ++h) {
+                getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content: void getTheContentOfEachChangedLine(git_patch* patch, size_t num_lines)
+{
+    vector<string> changedLines;
+    for (size_t i=0; i<num_lines; ++i)
+    {
+        const char* lineContent = git_patch_line_in_hunk(patch, 0, i, nullptr, nullptr, nullptr);
+        changedLines.emplace_back(lineContent);
+    }
+}
+
+void tokenizeChangedLines(const char* filePath, const vector<string>& changedLines)
+{
+    // Create index
+    CXIndex index = clang_createIndex(0, 0);
+    // Parse the file
+    // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content: {
+    vector<string> changedLines;
+    for (size_t i=0; i<num_lines; ++i)
+    {
+        const char* lineContent = git_patch_line_in_hunk(patch, 0, i, nullptr, nullptr, nullptr);
+        changedLines.emplace_back(lineContent);
+    }
+}
+
+void tokenizeChangedLines(const char* filePath, const vector<string>& changedLines)
+{
+    // Create index
+    CXIndex index = clang_createIndex(0, 0);
+    // Parse the file
+    // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content:     vector<string> changedLines;
+    for (size_t i=0; i<num_lines; ++i)
+    {
+        const char* lineContent = git_patch_line_in_hunk(patch, 0, i, nullptr, nullptr, nullptr);
+        changedLines.emplace_back(lineContent);
+    }
+}
+
+void tokenizeChangedLines(const char* filePath, const vector<string>& changedLines)
+{
+    // Create index
+    CXIndex index = clang_createIndex(0, 0);
+    // Parse the file
+    // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content:     for (size_t i=0; i<num_lines; ++i)
+    {
+        const char* lineContent = git_patch_line_in_hunk(patch, 0, i, nullptr, nullptr, nullptr);
+        changedLines.emplace_back(lineContent);
+    }
+}
+
+void tokenizeChangedLines(const char* filePath, const vector<string>& changedLines)
+{
+    // Create index
+    CXIndex index = clang_createIndex(0, 0);
+    // Parse the file
+    // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content:     {
+        const char* lineContent = git_patch_line_in_hunk(patch, 0, i, nullptr, nullptr, nullptr);
+        changedLines.emplace_back(lineContent);
+    }
+}
+
+void tokenizeChangedLines(const char* filePath, const vector<string>& changedLines)
+{
+    // Create index
+    CXIndex index = clang_createIndex(0, 0);
+    // Parse the file
+    // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content:         const char* lineContent = git_patch_line_in_hunk(patch, 0, i, nullptr, nullptr, nullptr);
+        changedLines.emplace_back(lineContent);
+    }
+}
+
+void tokenizeChangedLines(const char* filePath, const vector<string>& changedLines)
+{
+    // Create index
+    CXIndex index = clang_createIndex(0, 0);
+    // Parse the file
+    // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content:         changedLines.emplace_back(lineContent);
+    }
+}
+
+void tokenizeChangedLines(const char* filePath, const vector<string>& changedLines)
+{
+    // Create index
+    CXIndex index = clang_createIndex(0, 0);
+    // Parse the file
+    // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content:     }
+}
+
+void tokenizeChangedLines(const char* filePath, const vector<string>& changedLines)
+{
+    // Create index
+    CXIndex index = clang_createIndex(0, 0);
+    // Parse the file
+    // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content: }
+
+void tokenizeChangedLines(const char* filePath, const vector<string>& changedLines)
+{
+    // Create index
+    CXIndex index = clang_createIndex(0, 0);
+    // Parse the file
+    // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Modified, Content: 
+void getTheContentOfEachChangedLine(git_patch *patch, size_t hunkIndex) {
+    size_t lines = git_patch_num_lines_in_hunk(patch, hunkIndex);
+    
+    for (size_t i = 0; i < lines; ++i) {
+        const git_diff_line *line;
+        if (git_patch_get_line_in_hunk(&line, patch, hunkIndex, i) == GIT_OK) {
+            size_t numHunks = git_patch_num_hunks(patch);
+
+            for (size_t h = 0; h < numHunks; ++h) {
+                getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content: void tokenizeChangedLines(const char* filePath, const vector<string>& changedLines)
+{
+    // Create index
+    CXIndex index = clang_createIndex(0, 0);
+    // Parse the file
+    // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content: {
+    // Create index
+    CXIndex index = clang_createIndex(0, 0);
+    // Parse the file
+    // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content:     // Create index
+    CXIndex index = clang_createIndex(0, 0);
+    // Parse the file
+    // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content:     CXIndex index = clang_createIndex(0, 0);
+    // Parse the file
+    // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content:     // Parse the file
+    // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content:     // Tokenize ad traverse the AST for each changed line
+    // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Deleted, Content:     // Dispose of the translation
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content: void getTheContentOfEachChangedLine(git_patch *patch, size_t hunkIndex) {
+    size_t lines = git_patch_num_lines_in_hunk(patch, hunkIndex);
+    
+    for (size_t i = 0; i < lines; ++i) {
+        const git_diff_line *line;
+        if (git_patch_get_line_in_hunk(&line, patch, hunkIndex, i) == GIT_OK) {
+            size_t numHunks = git_patch_num_hunks(patch);
+
+            for (size_t h = 0; h < numHunks; ++h) {
+                getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content:     size_t lines = git_patch_num_lines_in_hunk(patch, hunkIndex);
+    
+    for (size_t i = 0; i < lines; ++i) {
+        const git_diff_line *line;
+        if (git_patch_get_line_in_hunk(&line, patch, hunkIndex, i) == GIT_OK) {
+            size_t numHunks = git_patch_num_hunks(patch);
+
+            for (size_t h = 0; h < numHunks; ++h) {
+                getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content:     
+    for (size_t i = 0; i < lines; ++i) {
+        const git_diff_line *line;
+        if (git_patch_get_line_in_hunk(&line, patch, hunkIndex, i) == GIT_OK) {
+            size_t numHunks = git_patch_num_hunks(patch);
+
+            for (size_t h = 0; h < numHunks; ++h) {
+                getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content:     for (size_t i = 0; i < lines; ++i) {
+        const git_diff_line *line;
+        if (git_patch_get_line_in_hunk(&line, patch, hunkIndex, i) == GIT_OK) {
+            size_t numHunks = git_patch_num_hunks(patch);
+
+            for (size_t h = 0; h < numHunks; ++h) {
+                getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content:         const git_diff_line *line;
+        if (git_patch_get_line_in_hunk(&line, patch, hunkIndex, i) == GIT_OK) {
+            size_t numHunks = git_patch_num_hunks(patch);
+
+            for (size_t h = 0; h < numHunks; ++h) {
+                getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content:         if (git_patch_get_line_in_hunk(&line, patch, hunkIndex, i) == GIT_OK) {
+            size_t numHunks = git_patch_num_hunks(patch);
+
+            for (size_t h = 0; h < numHunks; ++h) {
+                getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content:             size_t numHunks = git_patch_num_hunks(patch);
+
+            for (size_t h = 0; h < numHunks; ++h) {
+                getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content: 
+            for (size_t h = 0; h < numHunks; ++h) {
+                getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content:             for (size_t h = 0; h < numHunks; ++h) {
+                getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content:                 getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content:             }
+
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content: 
+            git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content:             git_patch_free(patch);
+        }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content:         }
+    }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Added, Content:     }
+}
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Modified, Content: }
+
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Modified, Content: 
+
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+Line Status: Modified, Content: 
+int main(){
+    cout << "Welcome to GoodCommit" << endl;
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
+    
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    
+
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
+
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
+
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+
+    
+    print_diff(diff);
+    cout << "i am here " << endl;
+
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
+    return 0;
+}
+
+i am here 

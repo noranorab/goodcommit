@@ -160,23 +160,22 @@ size_t getTheNumberOfChangedLines(git_patch* patch, int num)
     return git_patch_num_lines_in_hunk(patch, num);
 }
 
-void getTheContentOfEachChangedLine(git_patch* patch, size_t num_lines)
-{
-    vector<string> changedLines;
-    for (size_t i=0; i<num_lines; ++i)
-    {
-        const char* lineContent = git_patch_line_in_hunk(patch, 0, i, nullptr, nullptr, nullptr);
-        changedLines.emplace_back(lineContent);
-    }
-}
 
-void tokenizeChangedLines(const char* filePath, const vector<string>& changedLines)
-{
-    // Create index
-    CXIndex index = clang_createIndex(0, 0);
-    // Parse the file
-    // Tokenize ad traverse the AST for each changed line
-    // Dispose of the translation
+void getTheContentOfEachChangedLine(git_patch *patch, size_t hunkIndex) {
+    size_t lines = git_patch_num_lines_in_hunk(patch, hunkIndex);
+    
+    for (size_t i = 0; i < lines; ++i) {
+        const git_diff_line *line;
+        if (git_patch_get_line_in_hunk(&line, patch, hunkIndex, i) == GIT_OK) {
+            size_t numHunks = git_patch_num_hunks(patch);
+
+            for (size_t h = 0; h < numHunks; ++h) {
+                getTheContentOfEachChangedLine(patch, h);
+            }
+
+            git_patch_free(patch);
+        }
+    }
 }
 
 
