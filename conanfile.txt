@@ -1,0 +1,14 @@
+[requires]
+poco/1.13.0
+boost/1.84.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[layout]
+cmake_layout
+
+[imports]
+bin, *.dll -> bin
+bin, *.dylib -> bin

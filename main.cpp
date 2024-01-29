@@ -1,8 +1,16 @@
 #include <iostream>
 #include <git2.h>
 #include <clang-c/Index.h>
+#include <clang-c/CXString.h>
 #include <vector>
 using namespace std;
+
+ostream& operator<<(ostream& stream, const CXString& str)
+{
+  stream << clang_getCString(str);
+  clang_disposeString(str);
+  return stream;
+}
 
 
 int openGitRepo(git_repository **out, const char *path){
@@ -154,67 +162,72 @@ void print_diff(git_diff *diff)
         std::cout << std::endl;
     }
 }
-
-size_t getTheNumberOfChangedLines(git_patch* patch, int num)
-{
-    return git_patch_num_lines_in_hunk(patch, num);
-}
-
-
-void getTheContentOfEachChangedLine(git_patch *patch, size_t hunkIndex) {
-    size_t lines = git_patch_num_lines_in_hunk(patch, hunkIndex);
-    
-    for (size_t i = 0; i < lines; ++i) {
-        const git_diff_line *line;
-        if (git_patch_get_line_in_hunk(&line, patch, hunkIndex, i) == GIT_OK) {
-            size_t numHunks = git_patch_num_hunks(patch);
-
-            for (size_t h = 0; h < numHunks; ++h) {
-                getTheContentOfEachChangedLine(patch, h);
-            }
-
-            git_patch_free(patch);
-        }
+void tokenizeCode() {
+    CXIndex index = clang_createIndex(0, 0);
+    CXTranslationUnit unit = clang_parseTranslationUnit(
+    index,
+    "file1.txt", nullptr, 0,
+    nullptr, 0,
+    CXTranslationUnit_None);
+    if (unit == nullptr)
+    {
+        cerr << "Unable to parse translation unit. Quitting." << endl;
+        exit(-1);
     }
+    CXCursor cursor = clang_getTranslationUnitCursor(unit);
+    clang_visitChildren(
+        cursor,
+        [](CXCursor c, CXCursor parent, CXClientData client_data)
+        {
+        cout << "Cursor '" << clang_getCursorSpelling(c) << "' of kind '"
+            << clang_getCursorKindSpelling(clang_getCursorKind(c)) << "'\n";
+        return CXChildVisit_Recurse;
+        },
+        nullptr);
+
+
+    clang_disposeTranslationUnit(unit);
+    clang_disposeIndex(index);
 }
 
 
 int main(){
     cout << "Welcome to GoodCommit" << endl;
-    git_libgit2_init();
+    tokenizeCode();
+    // git_libgit2_init();
 
-    git_repository* git_repo = nullptr;
-    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+    // git_repository* git_repo = nullptr;
+    // int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
 
-    handleError(error, "Error opening the repository");
+    // handleError(error, "Error opening the repository");
     
-    identifyCodeChanges(git_repo);
+    // identifyCodeChanges(git_repo);
     
-    //Get the HEAD commit
-    git_oid head_oid;
-    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    // //Get the HEAD commit
+    // git_oid head_oid;
+    // git_reference_name_to_id(&head_oid, git_repo, "HEAD");
     
 
-    git_commit *head_commit = nullptr;
-    git_commit_lookup(&head_commit, git_repo, &head_oid);
-    git_tree *head_tree;
-    git_commit_tree(&head_tree, head_commit);
+    // git_commit *head_commit = nullptr;
+    // git_commit_lookup(&head_commit, git_repo, &head_oid);
+    // git_tree *head_tree;
+    // git_commit_tree(&head_tree, head_commit);
 
-    git_index *index = nullptr;
-    git_repository_index(&index, git_repo);
+    // git_index *index = nullptr;
+    // git_repository_index(&index, git_repo);
 
-    git_diff *diff = nullptr;
-    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+    // git_diff *diff = nullptr;
+    // git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
 
     
-    print_diff(diff);
-    cout << "i am here " << endl;
+    // print_diff(diff);
+    // cout << "i am here " << endl;
 
-    git_diff_free(diff);
-    git_index_free(index);
-    git_tree_free(head_tree);
-    git_commit_free(head_commit);
-    git_repository_free(git_repo);
-    git_libgit2_shutdown();
+    // git_diff_free(diff);
+    // git_index_free(index);
+    // git_tree_free(head_tree);
+    // git_commit_free(head_commit);
+    // git_repository_free(git_repo);
+    // git_libgit2_shutdown();
     return 0;
 }
