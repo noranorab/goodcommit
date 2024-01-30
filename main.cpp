@@ -1,8 +1,8 @@
 #include <iostream>
 #include <git2.h>
-#include <clang-c/Index.h>
-#include <clang-c/CXString.h>
 #include <vector>
+#include <clang/14/include/clang-c/clang-c/Index.h>
+#include <clang/14/include/clang-c/clang-c/CXString.h>
 using namespace std;
 
 ostream& operator<<(ostream& stream, const CXString& str)
@@ -163,12 +163,13 @@ void print_diff(git_diff *diff)
     }
 }
 void tokenizeCode() {
-    CXIndex index = clang_createIndex(0, 0);
+    CXIndex index = clang_createIndex(1, 1);
     CXTranslationUnit unit = clang_parseTranslationUnit(
     index,
-    "file1.txt", nullptr, 0,
+    "/home/nora/Bureau/goodcommit/goodcommit/main.cpp", nullptr, 0,
     nullptr, 0,
     CXTranslationUnit_None);
+    cout << unit <<endl;
     if (unit == nullptr)
     {
         cerr << "Unable to parse translation unit. Quitting." << endl;
