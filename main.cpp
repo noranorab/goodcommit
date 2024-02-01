@@ -141,94 +141,134 @@ int print_patch_line(
     return 0;
 }
 
-void print_diff(git_diff *diff)
-{
-    size_t nums_deltas = git_diff_num_deltas(diff);
-    cout << "Number of Deltas: " << nums_deltas << endl;
 
-    for (size_t i=0; i < nums_deltas; ++i)
+vector<string> print_diff(git_diff *diff)
+{
+    vector<string> changedSnippets;
+
+    size_t nums_deltas = git_diff_num_deltas(diff);
+
+    for (size_t i = 0; i < nums_deltas; ++i)
     {
         const git_diff_delta *delta = git_diff_get_delta(diff, i);
-        out("File : ", delta->new_file.path);
+        // out("File : ", delta->new_file.path);
 
         git_patch *patch = nullptr;
 
         if (git_patch_from_diff(&patch, diff, i) == GIT_OK)
         {
-            cout << "--------------------------------------------" << endl;
-            git_patch_print(patch, print_patch_line, nullptr);
+            size_t numHunks = git_patch_num_hunks(patch);
+
+            for (size_t h = 0; h < numHunks; ++h)
+            {
+                const git_diff_hunk *hunk = nullptr;
+                size_t* lines_in_hunk = nullptr;
+
+                if (git_patch_get_hunk(&hunk, lines_in_hunk, patch, h == GIT_OK))
+                {
+                    for (size_t l = 0; l < *lines_in_hunk; ++l)
+                    {
+                        const git_diff_line *line = nullptr;
+
+                        if(git_patch_get_line_in_hunk(&line, patch, h, l) == GIT_OK){
+
+                                if (line->origin == GIT_DIFF_LINE_ADDITION || line->origin == GIT_DIFF_LINE_DELETION)
+                                {
+                                    changedSnippets.emplace_back(line->content);
+                                }
+
+                        } 
+                    }
+                }
+
+                
+            }
+
             git_patch_free(patch);
         }
         std::cout << std::endl;
     }
-}
-void tokenizeCode() {
-    CXIndex index = clang_createIndex(1, 1);
-    CXTranslationUnit unit = clang_parseTranslationUnit(
-    index,
-    "/home/nora/Bureau/goodcommit/goodcommit/main.cpp", nullptr, 0,
-    nullptr, 0,
-    CXTranslationUnit_None);
-    cout << unit <<endl;
-    if (unit == nullptr)
+
+    for (const auto &snippets: changedSnippets)
     {
-        cerr << "Unable to parse translation unit. Quitting." << endl;
-        exit(-1);
+        cout << snippets << endl;
     }
-    CXCursor cursor = clang_getTranslationUnitCursor(unit);
-    clang_visitChildren(
-        cursor,
-        [](CXCursor c, CXCursor parent, CXClientData client_data)
+
+    return changedSnippets;
+}
+
+
+void tokenizeCode(const vector<string> &changedSnippets) {
+    CXIndex index = clang_createIndex(1, 1);
+    
+    for (const auto &snippet : changedSnippets)
+    {
+        CXTranslationUnit unit = clang_parseTranslationUnit(
+            index,
+            "snippet.cpp", nullptr, 0,
+            nullptr, 0,
+            CXTranslationUnit_None);
+
+        if (unit == nullptr)
         {
-        cout << "Cursor '" << clang_getCursorSpelling(c) << "' of kind '"
-            << clang_getCursorKindSpelling(clang_getCursorKind(c)) << "'\n";
-        return CXChildVisit_Recurse;
-        },
-        nullptr);
+            cerr << "Unable to parse translation unit. Quitting." << endl;
+            exit(-1);
+        }
 
+        CXCursor cursor = clang_getTranslationUnitCursor(unit);
+        clang_visitChildren(
+            cursor,
+            [](CXCursor c, CXCursor parent, CXClientData client_data)
+            {
+                cout << "Cursor '" << clang_getCursorSpelling(c) << "' of kind '"
+                     << clang_getCursorKindSpelling(clang_getCursorKind(c)) << "'\n";
+                return CXChildVisit_Recurse;
+            },
+            nullptr);
 
-    clang_disposeTranslationUnit(unit);
+        clang_disposeTranslationUnit(unit);
+    }
+
     clang_disposeIndex(index);
 }
 
 
 int main(){
     cout << "Welcome to GoodCommit" << endl;
-    tokenizeCode();
-    // git_libgit2_init();
-
-    // git_repository* git_repo = nullptr;
-    // int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
-
-    // handleError(error, "Error opening the repository");
     
-    // identifyCodeChanges(git_repo);
+    git_libgit2_init();
+
+    git_repository* git_repo = nullptr;
+    int error = openGitRepo(&git_repo, "/home/nora/Bureau/goodcommit/goodcommit");
+
+    handleError(error, "Error opening the repository");
     
-    // //Get the HEAD commit
-    // git_oid head_oid;
-    // git_reference_name_to_id(&head_oid, git_repo, "HEAD");
+    identifyCodeChanges(git_repo);
+    
+    //Get the HEAD commit
+    git_oid head_oid;
+    git_reference_name_to_id(&head_oid, git_repo, "HEAD");
     
 
-    // git_commit *head_commit = nullptr;
-    // git_commit_lookup(&head_commit, git_repo, &head_oid);
-    // git_tree *head_tree;
-    // git_commit_tree(&head_tree, head_commit);
+    git_commit *head_commit = nullptr;
+    git_commit_lookup(&head_commit, git_repo, &head_oid);
+    git_tree *head_tree;
+    git_commit_tree(&head_tree, head_commit);
 
-    // git_index *index = nullptr;
-    // git_repository_index(&index, git_repo);
+    git_index *index = nullptr;
+    git_repository_index(&index, git_repo);
 
-    // git_diff *diff = nullptr;
-    // git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
+    git_diff *diff = nullptr;
+    git_diff_index_to_workdir(&diff, git_repo, index, nullptr);
 
-    
-    // print_diff(diff);
-    // cout << "i am here " << endl;
+    vector<string> changedSnippets = print_diff(diff);
+    tokenizeCode(changedSnippets);
 
-    // git_diff_free(diff);
-    // git_index_free(index);
-    // git_tree_free(head_tree);
-    // git_commit_free(head_commit);
-    // git_repository_free(git_repo);
-    // git_libgit2_shutdown();
+    git_diff_free(diff);
+    git_index_free(index);
+    git_tree_free(head_tree);
+    git_commit_free(head_commit);
+    git_repository_free(git_repo);
+    git_libgit2_shutdown();
     return 0;
 }
