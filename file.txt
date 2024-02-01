@@ -1,8 +1,0 @@
-Welcome to GoodCommit
-2
-Modified in working directory: file.txt
-Modified in working directory: main.cpp
-File : file.txt
-
-File : main.cpp
-
